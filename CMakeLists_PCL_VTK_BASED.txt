@@ -1,0 +1,104 @@
+cmake_minimum_required( VERSION 3.13)
+ 
+# Create Project
+project( 3D_Thermal_Camera )
+add_executable( 3D_Thermal_Camera WIN32  3D_Thermal_Camera.cpp spi_master.cpp spi_master.h)
+set_property( DIRECTORY PROPERTY VS_STARTUP_PROJECT "3D_Thermal_Camera" )
+
+
+message (STATUS ${CMAKE_CURRENT_LIST_DIR})
+list(APPEND CMAKE_MODULE_PATH "C:/Users/Magdalena/Source/PCL/3dcam/trunk")
+# set(EIGEN_ROOT "C:/Program Files/Eigen3")
+find_package(Eigen)
+
+ 
+# Find Packages  COMPONENTS common io
+#dec 14, moving to PCL 1.9
+#find_package( PCL 1.9 REQUIRED )
+
+# intel TBB stuff
+include_directories("C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/tbb/include/tbb")
+link_directories("C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/tbb/lib/intel64_win/vc14_uwd")
+
+#boost stuff
+find_package(Boost 1.69 COMPONENTS) 
+if(Boost_FOUND)
+  set(Boost_USE_STATIC_LIBS OFF) 
+  set(Boost_USE_MULTITHREADED ON)  
+  set(Boost_USE_STATIC_RUNTIME OFF) 
+
+  set(BOOST_INCLUDEDIR ${BOOST_ROOT}/include)
+  set(BOOST_LIBRARYDIR ${BOOST_ROOT}/libs)
+  include_directories("c:/program files/boost/include/boost-1_69") 
+  link_directories("c:/program files/boost/lib")
+else()
+  message("Exiting: Boost not found and I need it.")
+  return ()
+
+endif()
+  set(Boost_DIR ${BOOST_ROOT})
+
+# Find VTK
+
+option(WITH_VTK "Build VTK-Visualizations" TRUE)
+if(WITH_VTK AND NOT ANDROID)
+  find_package(VTK)
+  if(VTK_FOUND)
+    if(NOT DEFINED VTK_RENDERING_BACKEND)
+      # On old VTK versions this variable does not exist. In this case it is
+      # safe to assume OpenGL backend
+      set(VTK_RENDERING_BACKEND "OpenGL")
+    endif()
+    message(STATUS "VTK_MAJOR_VERSION ${VTK_MAJOR_VERSION}, rendering backend: ${VTK_RENDERING_BACKEND}")
+    if(PCL_SHARED_LIBS OR (NOT (PCL_SHARED_LIBS) AND NOT (VTK_BUILD_SHARED_LIBS)))
+      set(VTK_FOUND TRUE)
+      find_package(QVTK)
+      if(${VTK_MAJOR_VERSION} VERSION_LESS "6.0")
+         message(STATUS "VTK found (include: ${VTK_INCLUDE_DIRS}, lib: ${VTK_LIBRARY_DIRS})")
+         link_directories(${VTK_LIBRARY_DIRS})
+      else()
+         include(${VTK_USE_FILE})
+         message(STATUS "VTK found (include: ${VTK_INCLUDE_DIRS}, lib: ${VTK_LIBRARIES}")
+      endif()
+      if(APPLE)
+          option(VTK_USE_COCOA "Use Cocoa for VTK render windows" ON)
+          MARK_AS_ADVANCED(VTK_USE_COCOA)
+      endif()
+      if(${VTK_RENDERING_BACKEND} STREQUAL "OpenGL")
+        set(VTK_RENDERING_BACKEND_OPENGL_VERSION "1")
+      elseif(${VTK_RENDERING_BACKEND} STREQUAL "OpenGL2")
+        set(VTK_RENDERING_BACKEND_OPENGL_VERSION "2")
+      endif()
+      set(HAVE_VTK ON)
+    else()
+      set(VTK_FOUND OFF)
+      set(HAVE_VTK OFF)
+      message("Warning: You are to build PCL in STATIC but VTK is SHARED!")
+      message("Warning: VTK disabled!")
+    endif()
+  endif()
+else()
+  set(VTK_FOUND OFF)
+  set(HAVE_VTK OFF)
+endif()
+
+
+
+# C:\Program Files\VTK\include\vtk-8.1\vtkSetGet.h in line 935 
+#  "# elif __cplusplus >= 201103L && __has_cpp_attribute(gnu::fallthrough)"
+#returns error:  the argument to a feature-test macro must be a simple identifier so I commented it.
+# This error should be in vtk-8.2 but  VS2017 points to a file in 8.1??!!
+# I replaced it with # elif __cplusplus >= 201103L && __has_cpp_attribute(fallthrough) apparently the gnu:: thingy is not a correct
+# macro identifier based on the macro standard.
+
+
+
+if(VTK_FOUND)
+  message(STATUS "VTK found (version: ${VTK_VERSION})")
+endif(VTK_FOUND)
+
+#DLN stuff
+include_directories("C:/Users/Magdalena/Source/PCL/3dcam/trunk/libs/dln/common")
+link_directories("C:/Users/Magdalena/Source/PCL/3dcam/trunk/libs/dln/bin")
+
+target_link_libraries(3D_Thermal_Camera PRIVATE ${VTK_LIBRARIES} )

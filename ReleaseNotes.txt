@@ -1,0 +1,52 @@
+Feb/10/2019
+- Ok, so I've successfully moved out from PCL, and went directly to vtk.
+- enabled vtk through WIN32 windows based application instead of command prompt application
+In order to have vtk work in Visual Studio 2017, I had to use multiple CMake scripts from PCL. These scripts seem to have been developed by Tsukasa Sugiura http://unanancyowen.com/en/pcl191/. I've copied the scripts that I need to use vtk in VS2017 into my project and added them, regardless, the easiest way to have vtk running in VS2017 is to simply install Tukasa's all_in_one Installers for PCL, since PCL uses vtk and Boost and Eigen and all that I need.  
+
+What I did was to install the latest boost, and use Tukasa's CMake scripts to make it run in VS2017, the same with vtk and Eigen etc.  
+
+The result is a completely new CMakeLists.txt with calls for other CMake scripts added to the root of the project.
+
+I've also moved the plotter to a windows based application, so all in all, everything is windows based now.
+
+I've encountered multiple problems that required me to modify the latest versions of Boost sources and vtk sources, but it seems that it all should work anyway if I use the all_in_one installer from Tukasa.
+
+
+Feb/6/2019
+Big Change:
+I'm leaving PCL and will work directly with VTK. 
+The main reason for this is that when creating a CMAKE WIN32 project with PCL, in order to work with a windows based application instead of a command prompt application, PCL crashes in multiple places. The problem may be related to this issue: https://github.com/PointCloudLibrary/pcl/issues/1601 
+On the other hand, creating a windows based project with CMake for VTK is straight forward so instead of hiding VTK with PCL, I've decided to work directly with VTK.
+This change brings other advantages. For instance, VTK has a DICOM interface, which allows me to open any DICOM file. It may also help me create DICOM files, but that will require extra work.
+
+Dec/18/2018
+upgrading to PCL 1.9.1
+download it: http://unanancyowen.com/en/pcl191/
+
+upgrade to CMake 3.13.2
+
+To remove the first Warning:- set the Environment Variables: PCL 1.8.1_ROOT
+add path: %PCL 1.8.1_ROOT
+On the Cmake menu, try "File-> Delete Cache".
+
+make sure you add this to the project properties "Additional Library Directories":
+C:\Program Files (x86)\IntelSWTools\compilers_and_libraries\windows\tbb\lib\intel64_win\vc14_uwd
+
+Building your own PCL:
+- after installing PCL 1.9.1 I just changed the PCL_ROOT environment variable to point now to the new PCL build folder: 
+PCL_ROOT:
+C:\Users\Magdalena\Source\PCL\PCL1_9_1\Source-pcl-pcl-1.9.1\pcl-pcl-1.9.1
+
+PCL 1.9.1_ROOT: C:\Users\Magdalena\Source\PCL\PCL1_9_1\Source-pcl-pcl-1.9.1\pcl-pcl-1.9.1
+
+I left the third party libraries env variables as previously set by the all in one pcl installer:
+BOOST_ROOT: C:\Program Files\PCL 1.9.1\3rdParty\Boost
+EIGEN_ROOT: C:\Program Files\Eigen3
+FLANN_ROOT: C:\Program Files\PCL 1.9.1\3rdParty\FLANN
+
+
+Redistribuitable dependencies:
+- The _app.dll is the C++ Runtime for store applications, while the normal vcruntime is for desktop C++ programs. The D stands for Debug version of the DLLs.
+
+I can see the DLLs on my Windows 10 (1607) with installed VS2015:
+

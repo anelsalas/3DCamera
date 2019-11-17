@@ -1,0 +1,72 @@
+
+cmake_minimum_required( VERSION 3.13)
+ 
+# Create Project
+project( 3D_Thermal_Camera )
+add_executable( 3D_Thermal_Camera WIN32  3D_Thermal_Camera.cpp spi_master.cpp spi_master.h)
+
+set_property( DIRECTORY PROPERTY VS_STARTUP_PROJECT "3D_Thermal_Camera" )
+
+# intel TBB stuff
+include_directories("C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/tbb/include/tbb")
+link_directories("C:/Program Files (x86)/IntelSWTools/compilers_and_libraries/windows/tbb/lib/intel64_win/vc14_uwd")
+ 
+#boost stuff
+find_package(Boost 1.69 COMPONENTS) 
+if(Boost_FOUND)
+  message("boost found")
+  set(Boost_USE_STATIC_LIBS OFF) 
+  set(Boost_USE_MULTITHREADED ON)  
+  set(Boost_USE_STATIC_RUNTIME OFF) 
+  
+  set(BOOST_INCLUDEDIR ${BOOST_ROOT}/include)
+  set(BOOST_LIBRARYDIR ${BOOST_ROOT}/libs)
+  include_directories("c:/program files/boost/include/boost-1_69") 
+  link_directories("c:/program files/boost/lib")
+else()
+  message("Exiting: Boost not found and I need it.")
+  return ()
+
+endif()
+
+#DLN stuff
+include_directories("C:/Users/Magdalena/Source/PCL/3dcam/trunk/libs/dln/common")
+link_directories("C:/Users/Magdalena/Source/PCL/3dcam/trunk/libs/dln/bin")
+
+
+# Find Packages  COMPONENTS common io
+
+find_package(VTK COMPONENTS 
+  vtkChartsCore
+  vtkCommonCore
+  vtkCommonDataModel
+  vtkIOPLY
+  vtkInteractionStyle
+  vtkRenderingContext2D
+  vtkRenderingContextOpenGL2
+  vtkRenderingCore
+  vtkRenderingFreeType
+  vtkRenderingGL2PSOpenGL2
+  vtkRenderingOpenGL2 
+  vtkViewsContext2D QUIET)
+if (NOT VTK_FOUND)
+  message("Exiting: ${VTK_NOT_FOUND_MESSAGE}")
+  return ()
+
+else ()
+  # include all components
+  target_link_libraries(3D_Thermal_Camera PRIVATE ${VTK_LIBRARIES} )
+
+
+endif()
+
+find_package( PCL 1.9 REQUIRED )
+if( PCL_FOUND )
+  include_directories( ${PCL_INCLUDE_DIRS} )
+  add_definitions( ${PCL_DEFINITIONS} )
+  link_directories( ${PCL_LIBRARY_DIRS} )
+  target_link_libraries(3D_Thermal_Camera ${PCL_LIBRARIES} )
+endif()
+
+
+

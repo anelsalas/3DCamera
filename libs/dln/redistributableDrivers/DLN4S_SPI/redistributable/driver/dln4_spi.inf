@@ -1,0 +1,103 @@
+[Version]
+Signature = "$Windows NT$"
+Class=%ClassName%
+ClassGUID={78A1C341-4539-11d3-B88D-00C04FAD5171}
+Provider=%ProviderName% 
+DriverVer=09/10/2013,2
+CatalogFile.ntx86="dln4x86.cat"
+CatalogFile.ntamd64="dln4amd64.cat"
+CatalogFile.ntia64="dln4ia64.cat"
+
+; ================== Class section ==================
+
+[ClassInstall32]
+Addreg=DlnDeviceClassReg
+
+[DlnDeviceClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-20
+
+; ========== Manufacturer/Models sections ===========
+
+[Manufacturer]
+%ProviderName% = DlnDevice_WinUSB,NTx86,NTamd64,NTia64
+
+[DlnDevice_WinUSB.NTx86]
+%USB\DlnDevice.DLN4SPI% = USB_Install, USB\VID_A257&PID_200F
+
+[DlnDevice_WinUSB.NTamd64]
+%USB\DlnDevice.DLN4SPI% = USB_Install, USB\VID_A257&PID_200F
+
+[DlnDevice_WinUSB.NTia64]
+%USB\DlnDevice.DLN4SPI% = USB_Install, USB\VID_A257&PID_200F
+
+; =================== Installation ===================
+
+[USB_Install]
+Include=winusb.inf
+Needs=WINUSB.NT
+
+[USB_Install.Services]
+Include=winusb.inf
+AddService=WinUSB,0x00000002,WinUSB_ServiceInstall
+
+[WinUSB_ServiceInstall]
+DisplayName     = %WinUSB_SvcDesc%
+ServiceType     = 1
+StartType       = 3
+ErrorControl    = 1
+ServiceBinary   = %12%\WinUSB.sys
+
+[USB_Install.Wdf]
+KmdfService=WINUSB, WinUsb_Install
+
+[WinUSB_Install]
+KmdfLibraryVersion=1.9
+
+[USB_Install.HW]
+AddReg=Dev_AddReg
+
+[Dev_AddReg]
+HKR,,DeviceInterfaceGUIDs,0x10000,"{6CAB74DD-87C7-4424-B548-2C83943C094D}"
+
+
+[USB_Install.CoInstallers]
+AddReg=CoInstallers_AddReg
+CopyFiles=CoInstallers_CopyFiles
+
+[CoInstallers_AddReg]
+HKR,,CoInstallers32,0x00010000,"WdfCoInstaller01009.dll,WdfCoInstaller","WinUSBCoInstaller2.dll"
+
+[CoInstallers_CopyFiles]
+WinUSBCoInstaller2.dll
+WdfCoInstaller01009.dll
+
+[DestinationDirs]
+CoInstallers_CopyFiles=11
+
+; ================= Source Media Section =====================
+
+[SourceDisksNames]
+1 = %DISK_NAME%,,,\i386
+2 = %DISK_NAME%,,,\amd64
+3 = %DISK_NAME%,,,\ia64
+
+[SourceDisksFiles.x86]
+WinUSBCoInstaller2.dll=1
+WdfCoInstaller01009.dll=1
+
+[SourceDisksFiles.amd64]
+WinUSBCoInstaller2.dll=2
+WdfCoInstaller01009.dll=2
+
+[SourceDisksFiles.ia64]
+WinUSBCoInstaller2.dll=3
+WdfCoInstaller01009.dll=3
+
+; =================== Strings ===================
+
+[Strings]
+ClassName      = "Diolan DLN-series Adapters"
+WinUSB_SvcDesc = "WinUSB Driver Service"
+ProviderName   = "Diolan (www.diolan.com)"
+USB\DlnDevice.DLN4SPI = "DLN-4 SPI Master Adapter"
